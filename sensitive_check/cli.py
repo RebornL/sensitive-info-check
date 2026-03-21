@@ -22,6 +22,7 @@ from .scanner import (
     SensitiveMatch,
     ScanResult,
 )
+from .excel_exporter import export_to_excel, generate_report_filename
 
 # 初始化colorama
 colorama_init()
@@ -197,6 +198,7 @@ def main():
 @click.option('-e', '--extension', multiple=True, help='扫描的文件扩展名（可多次指定）')
 @click.option('--show-context', is_flag=True, help='显示代码上下文')
 @click.option('--json', 'json_output', is_flag=True, help='JSON格式输出')
+@click.option('-x', '--excel', 'excel_output', default='', help='导出Excel报告到指定路径')
 @click.option('--no-summary', is_flag=True, help='不显示摘要')
 @click.option('-q', '--quiet', is_flag=True, help='静默模式，只显示有问题的地方')
 def scan(
@@ -209,6 +211,7 @@ def scan(
     extension: tuple,
     show_context: bool,
     json_output: bool,
+    excel_output: str,
     no_summary: bool,
     quiet: bool
 ):
@@ -219,6 +222,7 @@ def scan(
         sic scan ./src -s critical,high  # 只扫描高危级别
         sic scan ./src -a                # 扫描所有代码
         sic scan ./src --json            # JSON格式输出
+        sic scan ./src -x report.xlsx    # 导出Excel报告
     """
     path_obj = Path(path)
 
@@ -285,6 +289,21 @@ def scan(
         # 打印摘要
         if not no_summary and not quiet:
             print_summary(scan_result)
+
+    # 导出Excel报告
+    if excel_output is not None and excel_output != '':
+        try:
+            # 如果只传入目录或文件名，自动生成完整路径
+            output_path = excel_output
+            if not output_path.endswith('.xlsx'):
+                output_path = output_path + '.xlsx'
+
+            export_to_excel(scan_result, output_path)
+
+            if not quiet:
+                click.echo(f"\n{Fore.GREEN}Excel报告已生成: {output_path}{Style.RESET_ALL}")
+        except Exception as e:
+            click.echo(f"\n{Fore.RED}导出Excel失败: {str(e)}{Style.RESET_ALL}", err=True)
 
     # 返回码
     sys.exit(1 if scan_result.total_issues > 0 else 0)

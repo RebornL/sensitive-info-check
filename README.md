@@ -32,6 +32,7 @@
 - 支持 42 种常见敏感信息模式
 - 支持 16 种主流编程语言
 - 提供详细的修复建议
+- 支持导出Excel格式的安全报告
 - 可集成到 CI/CD 流程中
 
 ## 功能特性
@@ -39,7 +40,8 @@
 - **多语言支持**: 支持 Python、JavaScript、Java、Go 等 16 种编程语言
 - **丰富的检测模式**: 内置 42 种敏感信息检测规则
 - **灵活的扫描方式**: 支持文件扫描、目录扫描、全代码扫描
-- **多种输出格式**: 支持终端彩色输出和 JSON 格式输出
+- **多种输出格式**: 支持终端彩色输出、JSON 格式输出和 Excel 报告导出
+- **Excel报告**: 生成包含汇总统计和详细问题的Excel报告
 - **严重级别分类**: 按风险等级分类（CRITICAL/HIGH/MEDIUM/LOW）
 - **修复建议**: 为每个检测项提供安全建议
 - **可扩展**: 支持自定义检测规则
@@ -70,6 +72,7 @@ pip install -e .
 | colorama | >=0.4.0 | 终端彩色输出 |
 | pyyaml | >=6.0 | YAML配置解析 |
 | toml | >=0.10.0 | TOML配置解析 |
+| openpyxl | >=3.0.0 | Excel报告生成 |
 
 ## 快速开始
 
@@ -120,6 +123,7 @@ sic list-languages
 | `--extension` | `-e` | 扫描的文件扩展名（可多次指定） |
 | `--show-context` | - | 显示代码上下文 |
 | `--json` | - | JSON 格式输出 |
+| `--excel` | `-x` | 导出Excel报告到指定路径 |
 | `--no-summary` | - | 不显示摘要 |
 | `--quiet` | `-q` | 静默模式，只显示问题 |
 
@@ -143,6 +147,12 @@ sic scan ./src -a
 
 # 静默模式，适合CI/CD
 sic scan ./src -q --json
+
+# 导出Excel报告
+sic scan ./src -x report.xlsx
+
+# 导出Excel报告到指定路径
+sic scan ./src --excel /path/to/report.xlsx
 ```
 
 ### 退出码
@@ -344,6 +354,60 @@ print(f"Scanned {result.files_scanned} files")
 print(f"Found {result.total_issues} issues")
 ```
 
+### `excel_exporter.py` - Excel导出模块
+
+该模块负责将扫描结果导出为Excel格式的报告。
+
+```python
+from sensitive_check.excel_exporter import (
+    export_to_excel,           # 导出Excel报告
+    generate_report_filename,  # 生成报告文件名
+)
+```
+
+**主要功能**:
+
+- 生成包含汇总统计和详细问题的Excel报告
+- 按严重级别分类创建多个Sheet
+- 提供美观的格式化和颜色标记
+- 包含检测时间戳和修复建议
+
+**Excel报告结构**:
+
+| Sheet名称 | 内容 |
+|-----------|------|
+| 汇总报告 | 扫描统计、按级别/类别分类统计 |
+| 所有问题 | 按严重级别排序的所有问题列表 |
+| 严重问题-CRITICAL | 仅CRITICAL级别问题 |
+| 高危问题-HIGH | 仅HIGH级别问题 |
+| 中级问题-MEDIUM | 仅MEDIUM级别问题 |
+| 低级问题-LOW | 仅LOW级别问题 |
+
+**示例**:
+
+```python
+from sensitive_check.excel_exporter import export_to_excel
+from sensitive_check.scanner import scan_directory
+
+# 扫描代码
+result = scan_directory("./src")
+
+# 导出Excel报告
+export_to_excel(result, "report.xlsx", title="安全扫描报告")
+```
+
+**Excel报告字段**:
+
+| 字段 | 说明 |
+|------|------|
+| 序号 | 问题编号 |
+| 严重级别 | CRITICAL/HIGH/MEDIUM/LOW |
+| 类别 | 敏感信息类别 |
+| 文件路径 | 问题所在文件 |
+| 行号 | 问题所在行 |
+| 匹配内容 | 检测到的敏感信息片段 |
+| 修复建议 | 安全修复建议 |
+
 ## 配置与自定义
 
 ### 自定义检测模式
@@ -409,6 +473,9 @@ sic scan test_samples/sample_health_device.py
 
 # 测试多种语言
 sic scan test_samples/ --show-context
+
+# 导出Excel报告
+sic scan test_samples/ -x security_report.xlsx
 ```
 
 ### 测试样例说明
@@ -503,15 +570,17 @@ pytest tests/ --cov=sensitive_check --cov-report=html
 | `test_patterns.py` | 敏感信息模式检测测试 |
 | `test_detector.py` | 日志函数检测测试 |
 | `test_scanner.py` | 代码扫描器测试 |
+| `test_excel_exporter.py` | Excel导出功能测试 |
 
 ### 测试统计
 
 ```
-tests/test_detector.py: 17 tests
-tests/test_patterns.py: 13 tests  
-tests/test_scanner.py:  15 tests
-─────────────────────────────────
-Total:                  45 tests
+tests/test_detector.py:        17 tests
+tests/test_patterns.py:        13 tests
+tests/test_scanner.py:         15 tests
+tests/test_excel_exporter.py:  6 tests
+───────────────────────────────────────
+Total:                         51 tests
 ```
 
 ## 项目结构
@@ -523,13 +592,15 @@ sensitive-info-check/
 │   ├── patterns.py           # 敏感信息模式定义（42种模式）
 │   ├── detector.py           # 日志检测引擎（16种语言）
 │   ├── scanner.py            # 代码扫描器
+│   ├── excel_exporter.py     # Excel导出模块
 │   └── cli.py                # 命令行接口
 │
 ├── tests/                     # 单元测试
 │   ├── __init__.py
 │   ├── test_patterns.py      # 模式测试
 │   ├── test_detector.py      # 检测器测试
-│   └── test_scanner.py       # 扫描器测试
+│   ├── test_scanner.py       # 扫描器测试
+│   └── test_excel_exporter.py # Excel导出测试
 │
 ├── test_samples/              # 测试样例
 │   ├── sample.py             # Python 敏感信息示例
@@ -551,7 +622,8 @@ sensitive-info-check/
 | `patterns.py` | ~460 | 敏感信息模式定义，包含42种检测规则 |
 | `detector.py` | ~350 | 日志检测引擎，支持16种编程语言 |
 | `scanner.py` | ~470 | 代码扫描器，文件/目录扫描实现 |
-| `cli.py` | ~300 | 命令行接口，用户交互层 |
+| `excel_exporter.py` | ~280 | Excel报告导出模块 |
+| `cli.py` | ~310 | 命令行接口，用户交互层 |
 
 ## 贡献指南
 
