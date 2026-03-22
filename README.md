@@ -196,6 +196,13 @@ sic scan ./src --excel /path/to/report.xlsx
 | 健康档案数据 | 病历号/住院号 | `病历号：BL12345678` |
 | IMEI号 | 手机设备标识 | `imei: 359881060123456` |
 | IMSI号 | 用户识别码 | `imsi: 460001234567890` |
+| 心率数据 | 心率/心跳 | `heart_rate: 72bpm` |
+| 血压数据 | 血压值 | `blood_pressure: 120/80mmHg` |
+| 血糖数据 | 血糖值 | `blood_sugar: 5.6mmol/L` |
+| 体重/BMI数据 | 体重或BMI | `weight: 65.5kg` |
+| 步数数据 | 运动步数 | `step_count: 8500步` |
+| 睡眠数据 | 睡眠时长 | `sleep_duration: 7.5小时` |
+| 血型数据 | 血型信息 | `blood_type: A` |
 
 #### MEDIUM（中级）
 
@@ -222,10 +229,6 @@ sic scan ./src --excel /path/to/report.xlsx
 | 类型 | 说明 | 示例 |
 |------|------|------|
 | IP地址 | IPv4地址 | `192.168.1.100` |
-| 体重/BMI数据 | 体重或BMI | `weight: 65.5kg` |
-| 步数数据 | 运动步数 | `step_count: 8500步` |
-| 睡眠数据 | 睡眠时长 | `sleep_duration: 7.5小时` |
-| 血型数据 | 血型信息 | `blood_type: A` |
 
 ## 支持的编程语言
 
