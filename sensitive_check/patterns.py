@@ -431,7 +431,7 @@ SENSITIVE_PATTERNS: List[SensitivePattern] = [
     SensitivePattern(
         name="血压数据",
         category=Category.PERSONAL_DATA,
-        severity=Severity.MEDIUM,
+        severity=Severity.HIGH,
         pattern=re.compile(
             r"(?i)(blood[_-]?pressure|血压|收缩压|舒张压)[：:]*\s*\d{2,3}\s*[/-]\s*\d{2,3}\s*(mmHg|mmhg)?",
             re.IGNORECASE
@@ -463,7 +463,7 @@ SENSITIVE_PATTERNS: List[SensitivePattern] = [
     SensitivePattern(
         name="体重BMI数据",
         category=Category.PERSONAL_DATA,
-        severity=Severity.LOW,
+        severity=Severity.HIGH,
         pattern=re.compile(
             r"(?i)(weight|body[_-]?weight|体重|body[_-]?mass[_-]?index|BMI|身体质量指数)[：:]*\s*\d{2,3}\.?\d*\s*(kg|kg/m2)?",
             re.IGNORECASE
@@ -473,7 +473,7 @@ SENSITIVE_PATTERNS: List[SensitivePattern] = [
             "weight: 65.5kg",
             "BMI: 22.5",
         ],
-        recommendation="体重/BMI数据属于个人隐私，可根据需求决定是否脱敏"
+        recommendation="体重/BMI数据属于健康隐私信息，日志中应脱敏处理"
     ),
 
     SensitivePattern(
@@ -495,7 +495,7 @@ SENSITIVE_PATTERNS: List[SensitivePattern] = [
     SensitivePattern(
         name="睡眠数据",
         category=Category.PERSONAL_DATA,
-        severity=Severity.LOW,
+        severity=Severity.HIGH,
         pattern=re.compile(
             r"(?i)(sleep[_-]?duration|sleep[_-]?time|睡眠时长|睡眠时间|深度睡眠)[：:]*\s*\d{1,2}\.?\d*\s*(小时|h|hour)?",
             re.IGNORECASE
@@ -505,7 +505,7 @@ SENSITIVE_PATTERNS: List[SensitivePattern] = [
             "sleep_duration: 7.5小时",
             "深度睡眠：2.3h",
         ],
-        recommendation="睡眠数据属于个人隐私，可根据需求决定是否脱敏"
+        recommendation="睡眠数据属于运动健康隐私，日志中应脱敏处理"
     ),
 
     SensitivePattern(
