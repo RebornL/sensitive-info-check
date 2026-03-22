@@ -126,6 +126,7 @@ sic list-languages
 | `--excel` | `-x` | 导出Excel报告到指定路径 |
 | `--no-summary` | - | 不显示摘要 |
 | `--quiet` | `-q` | 静默模式，只显示问题 |
+| `--config` | `-C` | 自定义配置文件路径（JSON格式） |
 
 ### 使用示例
 
@@ -153,6 +154,9 @@ sic scan ./src -x report.xlsx
 
 # 导出Excel报告到指定路径
 sic scan ./src --excel /path/to/report.xlsx
+
+# 使用自定义配置文件
+sic scan ./src --config custom_patterns.json
 ```
 
 ### 退出码
@@ -161,6 +165,7 @@ sic scan ./src --excel /path/to/report.xlsx
 |--------|------|
 | 0 | 未发现敏感信息问题 |
 | 1 | 发现敏感信息问题 |
+| 2 | 配置文件加载失败 |
 
 ## 支持的敏感信息类型
 
@@ -413,9 +418,82 @@ export_to_excel(result, "report.xlsx", title="安全扫描报告")
 
 ## 配置与自定义
 
-### 自定义检测模式
+### 使用配置文件添加自定义模式
 
-可以通过编程方式添加自定义检测模式：
+支持通过JSON配置文件动态添加自定义敏感信息检测规则：
+
+```bash
+# 使用自定义配置文件扫描
+sic scan ./src --config custom_patterns.json
+
+# 或使用短选项
+sic scan ./src -C custom_patterns.json
+```
+
+#### 配置文件格式 (JSON)
+
+```json
+{
+  "patterns": [
+    {
+      "name": "自定义API密钥",
+      "pattern": "(?i)my_api_key\\s*[=:]\\s*['\"]?[a-zA-Z0-9]{16,}['\"]?",
+      "severity": "critical",
+      "category": "api_key",
+      "description": "检测到自定义API密钥",
+      "examples": [
+        "my_api_key = 'abc123def456ghi789'"
+      ],
+      "recommendation": "请将API密钥存储在环境变量中"
+    },
+    {
+      "name": "企业微信Webhook",
+      "pattern": "https://qyapi\\.weixin\\.qq\\.com/cgi-bin/webhook/send\\?key=[a-zA-Z0-9\\-]+",
+      "severity": "high",
+      "category": "url_with_credentials",
+      "description": "检测到企业微信机器人Webhook地址",
+      "recommendation": "Webhook地址属于敏感信息，应存储在配置文件中"
+    }
+  ]
+}
+```
+
+#### 配置字段说明
+
+| 字段 | 必需 | 说明 |
+|------|------|------|
+| `name` | 是 | 模式名称 |
+| `pattern` | 是 | 正则表达式模式 |
+| `severity` | 是 | 严重级别：`critical`、`high`、`medium`、`low` |
+| `category` | 是 | 类别：`password`、`api_key`、`token`、`secret_key`、`personal_data` 等 |
+| `description` | 否 | 描述信息 |
+| `examples` | 否 | 示例数据列表 |
+| `recommendation` | 否 | 修复建议 |
+| `flags` | 否 | 正则标志：`["ignorecase"]`、`["multiline"]` 等 |
+| `false_positive_rate` | 否 | 误报率估计：`low`、`medium`、`high` |
+
+#### 支持的类别
+
+| 类别 | 说明 |
+|------|------|
+| `password` | 密码相关 |
+| `api_key` | API密钥 |
+| `secret_key` | 密钥 |
+| `token` | 令牌 |
+| `private_key` | 私钥 |
+| `id_card` | 身份证 |
+| `phone` | 手机号 |
+| `email` | 邮箱 |
+| `bank_card` | 银行卡 |
+| `personal_data` | 个人数据 |
+| `ip_address` | IP地址 |
+| `url_with_credentials` | 带凭据的URL |
+| `aws_key` | AWS密钥 |
+| `database_url` | 数据库连接串 |
+
+### 编程方式添加自定义模式
+
+也可以通过编程方式添加自定义检测模式：
 
 ```python
 from sensitive_check.patterns import SensitivePattern, Category, Severity

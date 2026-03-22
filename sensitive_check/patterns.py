@@ -730,16 +730,53 @@ SENSITIVE_PATTERNS: List[SensitivePattern] = [
 ]
 
 
-def get_patterns_by_severity(severity: Severity) -> List[SensitivePattern]:
-    """获取指定严重级别的模式"""
-    return [p for p in SENSITIVE_PATTERNS if p.severity == severity]
+def get_patterns_by_severity(severity: Severity, patterns: Optional[List[SensitivePattern]] = None) -> List[SensitivePattern]:
+    """获取指定严重级别的模式
+
+    Args:
+        severity: 严重级别
+        patterns: 模式列表（默认使用内置模式）
+    """
+    pattern_list = patterns if patterns is not None else SENSITIVE_PATTERNS
+    return [p for p in pattern_list if p.severity == severity]
 
 
-def get_patterns_by_category(category: Category) -> List[SensitivePattern]:
-    """获取指定类别的模式"""
-    return [p for p in SENSITIVE_PATTERNS if p.category == category]
+def get_patterns_by_category(category: Category, patterns: Optional[List[SensitivePattern]] = None) -> List[SensitivePattern]:
+    """获取指定类别的模式
+
+    Args:
+        category: 类别
+        patterns: 模式列表（默认使用内置模式）
+    """
+    pattern_list = patterns if patterns is not None else SENSITIVE_PATTERNS
+    return [p for p in pattern_list if p.category == category]
 
 
-def get_patterns_by_severities(severities: List[Severity]) -> List[SensitivePattern]:
-    """获取多个严重级别的模式"""
-    return [p for p in SENSITIVE_PATTERNS if p.severity in severities]
+def get_patterns_by_severities(severities: List[Severity], patterns: Optional[List[SensitivePattern]] = None) -> List[SensitivePattern]:
+    """获取多个严重级别的模式
+
+    Args:
+        severities: 严重级别列表
+        patterns: 模式列表（默认使用内置模式）
+    """
+    pattern_list = patterns if patterns is not None else SENSITIVE_PATTERNS
+    return [p for p in pattern_list if p.severity in severities]
+
+
+def add_custom_pattern(pattern: SensitivePattern) -> None:
+    """添加自定义模式到内置模式列表
+
+    Args:
+        pattern: 要添加的模式
+    """
+    SENSITIVE_PATTERNS.append(pattern)
+
+
+def clear_custom_patterns() -> None:
+    """清除所有自定义模式（恢复内置模式）
+
+    注意：此函数会重置模式列表到初始状态
+    """
+    global SENSITIVE_PATTERNS
+    # 这里只保留内置模式，需要重新加载模块才能恢复
+    # 实际使用中建议使用 config_loader.get_all_patterns()

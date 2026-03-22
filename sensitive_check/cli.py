@@ -13,7 +13,14 @@ from colorama import init as colorama_init
 from colorama import Fore, Style
 
 from . import __version__
-from .patterns import Severity, Category, SENSITIVE_PATTERNS, get_patterns_by_severities, get_patterns_by_category
+from .patterns import (
+    Severity,
+    Category,
+    SensitivePattern,
+    SENSITIVE_PATTERNS,
+    get_patterns_by_severities,
+    get_patterns_by_category,
+)
 from .scanner import (
     scan_directory,
     scan_file,
@@ -23,6 +30,11 @@ from .scanner import (
     ScanResult,
 )
 from .excel_exporter import export_to_excel, generate_report_filename
+from .config_loader import (
+    get_all_patterns,
+    ConfigLoadError,
+    PatternValidationError,
+)
 
 # 初始化colorama
 colorama_init()
@@ -201,6 +213,8 @@ def main():
 @click.option('-x', '--excel', 'excel_output', default='', help='导出Excel报告到指定路径')
 @click.option('--no-summary', is_flag=True, help='不显示摘要')
 @click.option('-q', '--quiet', is_flag=True, help='静默模式，只显示有问题的地方')
+@click.option('--config', '-C', 'config_path', default='', type=click.Path(exists=False),
+              help='自定义配置文件路径（JSON格式）')
 def scan(
     path: str,
     recursive: bool,
@@ -213,7 +227,8 @@ def scan(
     json_output: bool,
     excel_output: str,
     no_summary: bool,
-    quiet: bool
+    quiet: bool,
+    config_path: str
 ):
     """扫描文件或目录中的敏感日志
 
@@ -223,13 +238,28 @@ def scan(
         sic scan ./src -a                # 扫描所有代码
         sic scan ./src --json            # JSON格式输出
         sic scan ./src -x report.xlsx    # 导出Excel报告
+        sic scan ./src --config custom.json  # 使用自定义配置
     """
     path_obj = Path(path)
+
+    # 加载检测模式
+    patterns: Optional[List[SensitivePattern]] = None
+    if config_path:
+        try:
+            patterns = get_all_patterns(config_path)
+            if not quiet:
+                click.echo(f"{Fore.GREEN}已加载自定义配置: {config_path}{Style.RESET_ALL}")
+        except (ConfigLoadError, PatternValidationError) as e:
+            click.echo(f"{Fore.RED}配置文件加载失败: {str(e)}{Style.RESET_ALL}", err=True)
+            sys.exit(2)
 
     # 解析参数
     severities = parse_severities(severity)
     categories = parse_categories(category)
-    patterns = get_patterns_by_severities(severities) if severity else None
+
+    # 如果未指定自定义模式且指定了严重级别过滤，则过滤内置模式
+    if patterns is None and severity:
+        patterns = get_patterns_by_severities(severities)
 
     # 忽略目录
     ignore_dirs = set(ignore_dir) if ignore_dir else None

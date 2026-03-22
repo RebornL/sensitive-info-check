@@ -1,0 +1,74 @@
+{
+  "patterns": [
+    {
+      "name": "自定义API密钥",
+      "pattern": "(?i)my_api_key\\s*[=:]\\s*['\"]?[a-zA-Z0-9]{16,}['\"]?",
+      "severity": "critical",
+      "category": "api_key",
+      "description": "检测到自定义API密钥",
+      "examples": [
+        "my_api_key = 'abc123def456ghi789'",
+        "my_api_key: 'XYZ123ABC456'"
+      ],
+      "recommendation": "请将API密钥存储在环境变量或密钥管理系统中"
+    },
+    {
+      "name": "内部Token",
+      "pattern": "(?i)internal_token\\s*[=:]\\s*['\"]?[a-zA-Z0-9_\\-]{20,}['\"]?",
+      "severity": "high",
+      "category": "token",
+      "description": "检测到内部系统Token",
+      "examples": [
+        "internal_token = 'tok_live_xxxxxxxxxxxx'",
+        "internal_token: 'sk_internal_12345'"
+      ],
+      "recommendation": "内部Token应通过安全的配置管理，避免硬编码"
+    },
+    {
+      "name": "企业微信Webhook",
+      "pattern": "https://qyapi\\.weixin\\.qq\\.com/cgi-bin/webhook/send\\?key=[a-zA-Z0-9\\-]{30,}",
+      "severity": "high",
+      "category": "url_with_credentials",
+      "description": "检测到企业微信机器人Webhook地址",
+      "examples": [
+        "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      ],
+      "recommendation": "Webhook地址属于敏感信息，应存储在配置文件中"
+    },
+    {
+      "name": "钉钉Webhook",
+      "pattern": "https://oapi\\.dingtalk\\.com/robot/send\\?access_token=[a-zA-Z0-9]{30,}",
+      "severity": "high",
+      "category": "url_with_credentials",
+      "description": "检测到钉钉机器人Webhook地址",
+      "examples": [
+        "https://oapi.dingtalk.com/robot/send?access_token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      ],
+      "recommendation": "Webhook地址属于敏感信息，应存储在配置文件中"
+    },
+    {
+      "name": "JWT Secret",
+      "pattern": "(?i)jwt[_-]?secret\\s*[=:]\\s*['\"]?[^'\"]{16,}['\"]?",
+      "severity": "critical",
+      "category": "secret_key",
+      "description": "检测到JWT签名密钥",
+      "examples": [
+        "jwt_secret = 'my-super-secret-jwt-key'",
+        "JWT_SECRET: 'your-256-bit-secret'"
+      ],
+      "recommendation": "JWT密钥应使用强随机生成，并存储在安全位置"
+    },
+    {
+      "name": "员工工号",
+      "pattern": "(?i)(emp[_-]?id|employee[_-]?id|工号)[：:=]*\\s*[A-Z]?\\d{6,10}",
+      "severity": "medium",
+      "category": "personal_data",
+      "description": "检测到员工工号",
+      "examples": [
+        "emp_id: E123456",
+        "工号：100001"
+      ],
+      "recommendation": "员工工号属于个人信息，日志中应脱敏处理"
+    }
+  ]
+}
