@@ -415,7 +415,7 @@ SENSITIVE_PATTERNS: List[SensitivePattern] = [
     SensitivePattern(
         name="心率数据",
         category=Category.PERSONAL_DATA,
-        severity=Severity.MEDIUM,
+        severity=Severity.HIGH,
         pattern=re.compile(
             r"(?i)(heart[_-]?rate|心率|心跳)[：:]*\s*\d{2,3}\s*(bpm|次/分|次每分)?",
             re.IGNORECASE
@@ -447,7 +447,7 @@ SENSITIVE_PATTERNS: List[SensitivePattern] = [
     SensitivePattern(
         name="血糖数据",
         category=Category.PERSONAL_DATA,
-        severity=Severity.MEDIUM,
+        severity=Severity.HIGH,
         pattern=re.compile(
             r"(?i)(blood[_-]?sugar|blood[_-]?glucose|血糖|空腹血糖|餐后血糖)[：:]*\s*\d{1,2}\.?\d*\s*(mmol/L|mg/dL)?",
             re.IGNORECASE
@@ -543,7 +543,7 @@ SENSITIVE_PATTERNS: List[SensitivePattern] = [
     SensitivePattern(
         name="血型数据",
         category=Category.PERSONAL_DATA,
-        severity=Severity.LOW,
+        severity=Severity.HIGH,
         pattern=re.compile(
             r"(?i)(blood[_-]?type|血型)[：:]*\s*(A|B|AB|O)[型]?",
             re.IGNORECASE
@@ -553,7 +553,7 @@ SENSITIVE_PATTERNS: List[SensitivePattern] = [
             "blood_type: A",
             "血型：AB型",
         ],
-        recommendation="血型数据属于个人隐私，可根据需求决定是否脱敏"
+        recommendation="血型数据属于健康隐私信息，日志中应脱敏处理"
     ),
 
     # ============ 设备类型数据 ============
